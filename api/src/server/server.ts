@@ -6,6 +6,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
+//configuring origin.
 const allowedOrigin: string = process.env.ORIGIN;
 const options: cors.CorsOptions = {
   origin: allowedOrigin,
