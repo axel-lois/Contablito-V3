@@ -1,0 +1,12 @@
+body {
+  background-color: #fafbfb !important;
+}
+
+.contain {
+  margin-top: 100px;
+}
+
+.img {
+  width: 90%;
+  height: 100%;
+}

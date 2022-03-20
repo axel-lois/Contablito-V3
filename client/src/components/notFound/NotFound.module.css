@@ -1,0 +1,28 @@
+@font-face {
+  font-family: "notFound";
+  src: url("../../fonts/FontdinerSwanky.ttf");
+}
+
+.img {
+  width: 90%;
+  height: 90%;
+}
+
+.contain {
+  margin: 250px auto;
+}
+
+.contain h1 {
+  font-family: "notFound" !important;
+  letter-spacing: 2px;
+}
+
+.contain h4 {
+    font-family: "notFound" !important;
+    letter-spacing: 2px;
+}
+
+.contain button {
+    font-family: "notFound" !important;
+    letter-spacing: 2px;
+}

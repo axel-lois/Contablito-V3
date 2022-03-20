@@ -1,0 +1,15 @@
+.container {
+  overflow: hidden;
+}
+
+.ul {
+  list-style-type: none;
+}
+
+@media screen and (max-width: 1050px) {
+  .cardWidth {
+    width: 80%;
+  }
+}
+
+

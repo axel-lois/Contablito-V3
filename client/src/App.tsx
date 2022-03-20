@@ -1,26 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Fragment } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LandingPage from "./components/landingPage/LandingPage";
+import "bootswatch/dist/flatly/bootstrap.min.css";
+import "bootstrap";
+import SignUp from "./components/signup/SignUp";
+import Home from "./components/home/Home";
+import Products from "./components/products/Products";
+import AddProduct from "./components/addProducts/AddProduct";
+import NotFound from "./components/notFound/NotFound";
 
-function App() {
+const App = (): JSX.Element => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Fragment>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signUp" element={<SignUp />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="/updateProduct/:id" element={<AddProduct />} />
+           <Route path="*" element={<NotFound/>} />
+        </Routes>
+      </BrowserRouter>
+    </Fragment>
   );
-}
+};
 
 export default App;
