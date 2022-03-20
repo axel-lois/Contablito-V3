@@ -27,7 +27,7 @@ const rootReducer = (state: IState = initialState, action: any): IState => {
         username: action.payload, //nothing basically
         products: [],
         productsCopy: [],
-        errors: [],
+        errors: ['You are unauthorized right now.'],
       };
     case "USER_LOGOUT_ERROR":
       return {
