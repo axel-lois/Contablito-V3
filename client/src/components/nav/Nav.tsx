@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { getUsername, logOut } from "../../actions/actions";
@@ -7,7 +7,6 @@ import Classes from "./Nav.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouseUser,
-  faAddressCard,
   faBox,
   faSquarePlus,
   faArrowRightFromBracket,
@@ -20,12 +19,14 @@ const Nav = (): JSX.Element => {
   const error = useSelector((state: IState) => state.errors);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getUsername());
-  }, []);
+    if (!username) {
+      dispatch(getUsername());
+    }
+  }, [dispatch, username]);
 
   useEffect(() => {
     error.length > 0 && navigate("/");
-  }, [error]);
+  }, [error, navigate]);
 
   const onLogout = (): void => {
     Swal.fire({

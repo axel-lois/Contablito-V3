@@ -1,7 +1,6 @@
 import { IValues } from "../components/login/Login";
 import { INewValues } from "../components/signup/SignUp";
 import { IProductErrors } from "../components/addProducts/AddProduct";
-import { IProduct } from "../reducer/interfaces";
 import { INewProduct } from "../components/addProducts/AddProduct";
 
 export const validateLogin = (values: IValues): IValues => {

@@ -13,7 +13,7 @@ const LandingPage = (): JSX.Element => {
       </div>
       <div className="row">
         <div className="col-12 col-md-6 mb-4">
-          <img className={Classes.img} src={Hero} />
+          <img alt="Hero" className={Classes.img} src={Hero} />
         </div>
         <div className="col-12 ms-md-4 col-md-5">
           <Login />

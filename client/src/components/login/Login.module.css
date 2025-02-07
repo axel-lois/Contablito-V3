@@ -35,3 +35,9 @@
 .create span:hover {
     color:#18bc9c !important;
 }
+
+.error {
+    color: red;
+    font-size: 14px;
+  }
+  

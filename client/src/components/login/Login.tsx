@@ -20,71 +20,75 @@ const Login = (): JSX.Element => {
     email: "",
     password: "",
   });
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof IValues, boolean>>
+  >({});
+
+  useEffect(() => {
+    if (localStorage.getItem("sessionToken")) {
+      navigate("/home");
+    }
+  }, [navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value.trim() }));
+    setTouched((prev) => ({ ...prev, [name]: true })); // Marcar el campo como tocado al escribir
+    setErrors(validateLogin({ ...values, [name]: value.trim() }));
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true })); // Marcar como tocado al perder el foco
+  };
+
   const submitHandler = async (
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
-    setErrors(validateLogin(values));
+
+    // Marcar todos los campos como tocados al intentar enviar el formulario
+    setTouched({
+      email: true,
+      password: true,
+    });
+
+    const validationErrors = validateLogin(values);
+    setErrors(validationErrors);
+
+    // Si hay errores, detener el envío
+    if (Object.values(validationErrors).some((error) => error)) return;
+
     try {
-      if (errors.email.length === 0 && errors.password.length === 0) {
-        let response: AxiosResponse = await axios.post(
-          "/api/auth/signin",
-          values
-        );
-        localStorage.setItem(
-          "sessionToken",
-          JSON.stringify(response.headers["auth-token"])
-        );
-        Swal.fire({
-          icon: "success",
-          title: "You logged in successfully.",
-          confirmButtonColor: "#18bc9c",
-        }).then(() => {
-          navigate("/home");
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Errors:",
-          text: `${
-            errors.email === errors.password ? errors.email : errors.email
-          } ${errors.email !== errors.password ? errors.password : ""}`,
-          confirmButtonColor: "#18bc9c",
-        });
-      }
-    } catch (error: any) {
-      const e = error.response.data.errorMsg;
-      setErrors({
-        email: e,
-        password: e,
+      const response: AxiosResponse = await axios.post(
+        "/api/auth/signin",
+        values
+      );
+      localStorage.setItem(
+        "sessionToken",
+        JSON.stringify(response.headers["auth-token"])
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "You logged in successfully.",
+        confirmButtonColor: "#18bc9c",
+      }).then(() => {
+        navigate("/home");
       });
+    } catch (error: any) {
+      const e = error.response?.data?.errorMsg || "Invalid login credentials.";
+      setErrors({ email: e, password: e });
+
       Swal.fire({
         icon: "error",
-        title: "Errors:",
-        text: `${e}`,
+        title: "Login failed",
+        text: e,
         confirmButtonColor: "#18bc9c",
       });
     }
   };
-  useEffect(() => {
-    setErrors(validateLogin(values));
-    if (localStorage.getItem("sessionToken")) {
-      navigate("/home");
-    }
-  }, []);
 
-  const handleChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    setValues({
-      ...values,
-      [e.currentTarget.name]: e.currentTarget.value.trim(),
-    });
-    setErrors(
-      validateLogin({
-        ...values,
-        [e.currentTarget.name]: e.currentTarget.value.trim(),
-      })
-    );
-  };
   return (
     <div className="col-12 col-md-12 col-lg-10 mb-4">
       <form onSubmit={submitHandler}>
@@ -92,41 +96,49 @@ const Login = (): JSX.Element => {
         <p className={`mb-4 text-muted ${Classes.paragraph}`}>
           Sign in to start viewing your products.
         </p>
+
+        {/* Email Input */}
         <div className={`form-group first ${Classes.inputDivTop}`}>
           <input
             name="email"
             value={values.email}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Email"
             type="email"
             className={`form-control shadow-none ${Classes.input} ${
-              errors.email && "is-invalid"
+              touched.email && errors.email ? "is-invalid" : ""
             }`}
             id="email"
             autoComplete="on"
           />
         </div>
-        <div className={`form-group last mb-3 ${Classes.inputDivBot}`}>
+
+        {/* Password Input */}
+        <div className={`form-group last ${Classes.inputDivBot}`}>
           <input
             name="password"
             value={values.password}
             onChange={handleChange}
-            placeholder="password"
+            onBlur={handleBlur}
+            placeholder="Password"
             type="password"
             className={`form-control shadow-none ${Classes.input} ${
-              errors.password && "is-invalid"
+              touched.password && errors.password ? "is-invalid" : ""
             }`}
             id="password"
             autoComplete="on"
           />
         </div>
-        <div className="mb-4">
+
+        <div className="mb-2">
           <NavLink className={`${Classes.create}`} to={"/signUp"}>
-            <span className={`text-muted`}>
-              Dont' have an account? Create one.
+            <span className="text-muted">
+              Don't have an account? Create one.
             </span>
           </NavLink>
         </div>
+
         <input
           type="submit"
           value="Log In"

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Classes from "./SignUp.module.css";
 import { validateSignup } from "../../utils/validate";
-import { useDispatch } from "react-redux";
 import axios, { AxiosResponse } from "axios";
 import Swal from "sweetalert2";
 
@@ -21,7 +20,6 @@ export interface INewUser {
 
 const SignUp = (): JSX.Element => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [values, setValues] = useState<INewValues>({
     username: "",
     email: "",
@@ -34,72 +32,83 @@ const SignUp = (): JSX.Element => {
     password: "",
     passwordConfirm: "",
   });
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof INewValues, boolean>>
+  >({});
 
-  const handleChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    setValues({
-      ...values,
-      [e.currentTarget.name]: e.currentTarget.value.trim(),
-    });
-    setErrors(
-      validateSignup({
-        ...values,
-        [e.currentTarget.name]: e.currentTarget.value.trim(),
-      })
-    );
+  useEffect(() => {
+    if (localStorage.getItem("sessionToken")) {
+      navigate("/home");
+    }
+  }, [navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+
+    setValues((prev) => ({ ...prev, [name]: value.trim() }));
+    setTouched((prev) => ({ ...prev, [name]: true })); // Marca como tocado al escribir
+    setErrors(validateSignup({ ...values, [name]: value.trim() }));
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
   const submitHandler = async (
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
-    setErrors(validateSignup(values));
+
+    // Marcar todos los campos como tocados al intentar enviar el formulario
+    setTouched({
+      username: true,
+      email: true,
+      password: true,
+      passwordConfirm: true,
+    });
+
+    const validationErrors = validateSignup(values);
+    setErrors(validationErrors);
+
+    // Si hay errores, no continuar
+    if (Object.values(validationErrors).some((error) => error)) return;
 
     try {
-      if (
-        !errors.email &&
-        !errors.username &&
-        !errors.password &&
-        !errors.passwordConfirm
-      ) {
-        const newUser: INewUser = {
-          username: values.username,
-          email: values.email,
-          password: values.password,
-        };
-        let response: AxiosResponse = await axios.post(
-          "/api/auth/signup",
-          newUser
-        );
-        localStorage.setItem(
-          "sessionToken",
-          JSON.stringify(response.headers["auth-token"])
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Congratulations!",
-          text: "Your account has been created.",
-          confirmButtonColor: "#18bc9c",
-        }).then(() => {
-          navigate("/home");
-        });
-      }
+      const newUser: INewUser = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+      };
+
+      const response: AxiosResponse = await axios.post(
+        "/api/auth/signup",
+        newUser
+      );
+      localStorage.setItem(
+        "sessionToken",
+        JSON.stringify(response.headers["auth-token"])
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Congratulations!",
+        text: "Your account has been created.",
+        confirmButtonColor: "#18bc9c",
+      }).then(() => {
+        navigate("/home");
+      });
     } catch (error: any) {
-      const e = error.response.data.errorMsg;
-      if(e === 'Username already exists.') {
-        setErrors({ email: '', username: e, password: '', passwordConfirm: '' });
+      console.log(error);
+      const e = error.response?.data?.errorMsg;
+      if (e === "Username already exists.") {
+        setErrors((prev) => ({ ...prev, username: e }));
       }
-      if(e === 'Email already exists.') {
-        setErrors({ email: e, username: '', password: '', passwordConfirm: '' })
+      if (e === "Email already exists.") {
+        setErrors((prev) => ({ ...prev, email: e }));
       }
     }
   };
-
-  useEffect(() => {
-    setErrors(validateSignup(values));
-    if (localStorage.getItem("sessionToken")) {
-      navigate("/home");
-    }
-  }, []);
 
   return (
     <div className={`container ${Classes.contain}`}>
@@ -107,7 +116,7 @@ const SignUp = (): JSX.Element => {
         <div className="col-12 col-md-12 col-lg-8 col-xl-6 mb-4">
           <form
             onSubmit={submitHandler}
-            className={` d-flex flex-column align-items-center justify-content-center ${Classes.form}`}
+            className={`d-flex flex-column align-items-center justify-content-center ${Classes.form}`}
           >
             <div className="mb-4 w-100">
               <h3 className="fw-bold">Sign Up</h3>
@@ -116,75 +125,88 @@ const SignUp = (): JSX.Element => {
               </p>
               <hr />
             </div>
+
+            {/* Username Input */}
             <div
               className={`form-group mb-2 w-100 text-center fs-5 ${Classes.inputDiv}`}
             >
               <input
                 name="username"
                 onChange={handleChange}
+                onBlur={handleBlur}
                 type="text"
-                id="username"
                 placeholder="Enter username"
                 className={`form-control shadow-none ${
-                  errors.username ? "is-invalid" : "is-valid"
+                  touched.username && errors.username ? "is-invalid" : ""
                 }`}
                 autoComplete="on"
               />
             </div>
-            {errors.username && (
+            {touched.username && errors.username && (
               <p className={Classes.error}>{errors.username}</p>
             )}
+
+            {/* Email Input */}
             <div
               className={`form-group mb-2 w-100 text-center fs-5 ${Classes.inputDiv}`}
             >
               <input
                 name="email"
                 onChange={handleChange}
+                onBlur={handleBlur}
                 type="email"
-                id="createEmail"
                 placeholder="Enter email"
                 className={`form-control shadow-none ${
-                  errors.email ? "is-invalid" : "is-valid"
+                  touched.email && errors.email ? "is-invalid" : ""
                 }`}
                 autoComplete="on"
               />
             </div>
-            {errors.email && <p className={Classes.error}>{errors.email}</p>}
+            {touched.email && errors.email && (
+              <p className={Classes.error}>{errors.email}</p>
+            )}
+            {/* Password Input */}
             <div
               className={`form-group mb-2 w-100 text-center fs-5 ${Classes.inputDiv}`}
             >
               <input
                 name="password"
                 onChange={handleChange}
+                onBlur={handleBlur}
                 type="password"
                 placeholder="Enter password"
-                id="createPassword"
                 className={`form-control shadow-none ${
-                  errors.password ? "is-invalid" : "is-valid"
+                  touched.password && errors.password ? "is-invalid" : ""
                 }`}
                 autoComplete="on"
               />
             </div>
-            {errors.password && (
+            {touched.password && errors.password && (
               <p className={Classes.error}>{errors.password}</p>
             )}
+
+            {/* Confirm Password Input */}
             <div
               className={`form-group mb-2 w-100 text-center fs-5 ${Classes.inputDiv}`}
             >
               <input
                 name="passwordConfirm"
                 onChange={handleChange}
-                placeholder="Confirm password"
+                onBlur={handleBlur}
                 type="password"
+                placeholder="Confirm password"
                 className={`form-control shadow-none ${
-                  errors.passwordConfirm ? "is-invalid" : "is-valid"
+                  touched.passwordConfirm && errors.passwordConfirm
+                    ? "is-invalid"
+                    : ""
                 }`}
                 autoComplete="on"
               />
             </div>
-            {errors.passwordConfirm && (
+            {touched.passwordConfirm && errors.passwordConfirm && (
               <p className={Classes.error}>{errors.passwordConfirm}</p>
             )}
+
             <button
               type="submit"
               className="btn btn-success w-100 mb-2 fw-bold fs-5"

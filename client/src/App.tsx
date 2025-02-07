@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LandingPage from "./components/landingPage/LandingPage";
 import "bootswatch/dist/flatly/bootstrap.min.css";
@@ -20,7 +20,7 @@ const App = (): JSX.Element => {
           <Route path="/products" element={<Products />} />
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/updateProduct/:id" element={<AddProduct />} />
-           <Route path="*" element={<NotFound/>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </Fragment>
